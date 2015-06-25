@@ -8,16 +8,14 @@ class Ticket_Window:
 
     # All ticket windows start out with no customers, and no
     # knowledge of their processing time until the simulation starts
-    def __init__(self, customer=None, process_time=None, current_amount_of_tickets=0):
+    def __init__(self, current_amount_of_tickets=0):
         self.window_number = 0
-        self.customer = customer
-        self.process_time = process_time
+        self.customer = None
+
+        self.process_time = 0
         self.current_amount_of_tickets = current_amount_of_tickets
 
-    # Increments the window number
-    def increment_window_number(self):
-        self.window_number += 1
-        return self.window_number
+        self.customer_occupied_window = False
 
     # Gives a ticket to the customers by decrementing how many tickets there are
     def issue_ticket(self):
@@ -35,18 +33,17 @@ class Ticket_Window:
     # Adds a customer to a window
     def add_customer_to_window(self):
         self.customer = Customer()
+        self.customer_occupied_window = True
 
     # Removes a customer from a window, issues them a ticket
     def remove_from_window(self):
         self.issue_ticket()
         self.customer = None
+        self.customer_occupied_window = False
 
     # Canonical representation of a Ticket Window object
     def __repr__(self):
 
-        return 'Ticket_Window({})'.format(self.customer)
-
-
-
+        return 'Ticket_Window({})'.format(self.process_time)
 
 
