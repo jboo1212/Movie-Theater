@@ -39,12 +39,6 @@ class Ticket_Line(_Queue):
         _Queue.__init__(self)
         self.line_number = 0
 
-    # NOT COMPLETE
-    # Still doesn't know what to do with a customer object
-    # when added to the Queue (linked list).
-    def __len__(self):
-        return len(self.linked_list.print_list())
-
     # Increments the line number.
     def increment_line_number(self):
         self.line_number += 1
@@ -53,18 +47,12 @@ class Ticket_Line(_Queue):
     def __repr__(self):
         return 'Ticket Line'
 
+    def __len__(self):
+        return self.linked_list.length
+
 
 # Make a bare-bones customer class.
 class Customer:
 
     def __init__(self):
         pass
-
-
-# NOT COMPLETE; see _len_() in Ticket_Line(_Queue)
-# Buggy --
-t = Ticket_Line()
-customer1 = Customer()
-t.enqueue(customer1)
-
-len(t)
