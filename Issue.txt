@@ -1,0 +1,2 @@
+I am having issues with the n-line, n-window case.  Please stay tuned as I fix this / work on another project -- not spending
+as much time on this project due to lost interest.
