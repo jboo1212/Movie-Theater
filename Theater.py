@@ -2,7 +2,6 @@ __author__ = 'Sorostitude'
 
 from _Queue import Ticket_Line, Customer
 from window import Ticket_Window
-from Clock import Clock
 
 
 class Theater:
@@ -16,28 +15,32 @@ class Theater:
         self.num_of_lines = num_of_lines
         self.num_of_windows = num_of_windows
 
-        self.customer_occupied_window = False
         self.customer = None
 
     # Creates 'n' amount of ticket windows and gives them numbers.
-    # (Ticket Window, 1), (Ticket Window, 2)...
+    # Ticket Window(1), Ticket Window(2),...
     # with no notion of a customer and how long it takes to process a customer
-    # More details in ICS 33 'No Line on the Horizon' Documentation.
     def add_windows(self):
 
         for n in range(self.num_of_windows):
             ticket_window = Ticket_Window()
             self.ticket_window_list.append(ticket_window)
+            self.ticket_window_list[n].window_number = n+1
+
 
         return self.ticket_window_list
 
     # Creates 'n' amount of ticket lines and gives them numbers.
-    # (Ticket Line, 1), (Ticket Line, 2)...
+    # Ticket Line(1), Ticket Line(2)...
     def add_lines(self):
 
         for n in range(self.num_of_lines):
             ticket_line = Ticket_Line()
+
+            # Add a ticket line to a list of ticket lines.
             self.ticket_line_list.append(ticket_line)
+            # Each ticket line gets its own number.
+            self.ticket_line_list[n].line_number += n+1
 
         return self.ticket_line_list
 
@@ -46,8 +49,6 @@ class Theater:
     # If there is more than one line, we need to make sure customers are going
     # to the line with the lowest amount of customers there.
     def delegate_line(self, num_of_customers):
-
-        self.add_lines()
 
         if self.num_of_lines < self.num_of_windows:
 
@@ -63,49 +64,101 @@ class Theater:
 
         elif self.num_of_lines == self.num_of_windows:
 
+            min_number = 9000
+            min_index_number = 0
+
             for x in range(num_of_customers):
 
                 customer = Customer()
 
-                # Make a customer and whatever line has
-                # the lowest number of people in it, given that
-                # there are all equal amount of people in the lines,
-                # put the customer in the lowest number line.
-                if len(self.ticket_line_list[0]) == len(self.ticket_line_list[1]):
+                for n in range(len(self.ticket_line_list)):
 
-                    self.ticket_line_list[0].enqueue(customer)
+                    if len(self.ticket_line_list[n]) <= min_number:
 
-                else:
-                    self.ticket_line_list[x].enqueue(customer)
+                        min_number = len(self.ticket_line_list[n])
+
+                        min_index_number = n
+
+                    else:
+                        # If the length of the current ticket line is bigger than
+                        # the min number, we know to queue to the previous line.
+                        min_index_number = n - 1
+
+                        min_number = len(self.ticket_line_list[n])
+
+                self.ticket_line_list[min_index_number].enqueue(customer)
+
+        else:
+            pass
 
         return self.ticket_line_list
 
-    # Takes a customer from a line to a window;
-    # There are two cases ------
-    # 1) Customer isn't there at the window AND can be added to the window (i.e. in the line)
-    # Customer must also be at his designated window (line 1 >> window 1, line 2 >> window 2)...
-    # 2) Customer has been at the window for the designated amount of time so he must be given
-    # his ticket and removed from the window.
     def move_customer(self):
 
-        for window_element in self.ticket_window_list:
-            for line_element in self.ticket_line_list:
-                ticket_window = window_element[0]
-                ticket_line = line_element[0]
-                if (ticket_window.customer is None and not ticket_line.front() is None and
-                    window_element[1] == line_element[1]):
+        for n in range(len(self.ticket_line_list)):
+            for x in range(len(self.ticket_window_list)):
+                current_ticket_line = self.ticket_line_list[n]
+                current_window = self.ticket_window_list[x]
 
-                    ticket_line.dequeue()
-                    ticket_window.add_customer_to_window()
-                    self.customer_occupied_window = True
+                # n lines, n windows
+                if self.num_of_lines == self.num_of_windows and n == x:
+
+                    # Case 1:
+                    # If there is no customer at the window and there is at least one person in the same line.
+                    # Case 2:
+                    # If the customer has occupied the window for enough time, get rid of him.
+                    # Case 3:
+                    # If there is no customer at the window and there is no one in line and the customer is done,
+                    # get rid of him.
+                    if current_window.customer is None and len(current_ticket_line) >= 1:
+                        current_ticket_line.dequeue()
+                        current_window.add_customer_to_window()
+
+                    elif not (current_window.customer is None) and len(current_ticket_line) >= 1 and \
+                            current_window.process_time == 0:
+
+                        current_window.remove_from_window()
+                        current_ticket_line.dequeue()
+                        current_window.add_customer_to_window()
+
+                    elif not (current_window.customer is None) and len(current_ticket_line) == 0 and \
+                            current_window.process_time == 0:
+
+                        current_window.remove_from_window()
+                    else:
+                        pass
+
+                # 1 line, n windows
+                elif self.num_of_lines < self.num_of_windows:
+                    # Case 1:
+                    # If there is no customer at the window and there is at least one person in the same line.
+                    # Case 2:
+                    # If the customer has occupied the window for enough time, get rid of him.
+                    # Case 3:
+                    # If there is no customer at the window and there is no one in line and the customer is done,
+                    # get rid of him.
+                    if current_window.customer is None and len(current_ticket_line) >= 1:
+                        current_ticket_line.dequeue()
+                        current_window.add_customer_to_window()
+
+                    elif not (current_window.customer is None) and len(current_ticket_line) >= 1 and \
+                            current_window.process_time == 0:
+
+                        current_window.remove_from_window()
+                        current_ticket_line.dequeue()
+                        current_window.add_customer_to_window()
+
+                    elif not (current_window.customer is None) and len(current_ticket_line) == 0 and \
+                            current_window.process_time == 0:
+
+                        current_window.remove_from_window()
+                    else:
+                        pass
 
                 else:
-                    ticket_window.remove_from_window()
-                    ticket_line.dequeue()
-                    ticket_window.add_customer_to_window()
-                    self.customer_occupied_window = True
+                    pass
 
-            return self.customer_occupied_window
+        return self.ticket_window_list, self.ticket_line_list
 
     # Make a custom representation for a Theater object.
     def __repr__(self):
@@ -114,15 +167,15 @@ class Theater:
                                       self.ticket_window_list)
 
 
+# Let's see if delegate lines is working properly; it IS NOT WORKING PROPERLY
+# A customer gets moved to Ticket Line 2, not Ticket Line 1.
+# The fact still remains that if both lines are the same length, neither one is THE minimum line.
+# We need to say, put the customer in the line with the shortest line number.
 
-# NOT COMPLETE;
-# Buggy --- 
-theater = Theater(2, 0)
+theater = Theater(2, 2)
+theater.add_lines()
+theater.add_windows()
+
 theater.delegate_line(1)
-print len(theater.ticket_line_list[0])
 
-
-
-
-
-
+print len(theater.ticket_line_list[1])
